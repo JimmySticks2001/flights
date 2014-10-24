@@ -79,16 +79,16 @@
 				<div class="medium-6 columns">
 					<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 						<?php 
-							if(isset($_POST["query"]))
+							if(isset($_POST["query"]))	//if PHP received a http POST request
 							{
-								$query = $_POST["query"];
+								$query = $_POST["query"];	//get the received query
 							}
 							else
 							{
-								$query = "";
+								$query = "";	//if nothing was recieved, query is a 0 char string
 							}
 						?>
-						<textarea name="query" rows="19" required><?php echo $query; ?></textarea>
+						<textarea name="query" rows="19" required><?php echo $query;//place the query into the textarea?></textarea>
 
 						<input type ="submit" class="button small radius">						
 					</form>
@@ -96,53 +96,75 @@
 			</fieldset>
 		</div>
 		<div class="row">
-			<div class="small-7 columns">
+			<div class="small-9 small-centered columns">
 				<?php
-					if(isset($_POST["query"]))
+					ini_set('display_errors',0);
+					error_reporting(E_ALL);
+
+					if(isset($_POST["query"]))	//if there is stuff to receive from the form...
 					{
-						ini_set('display_errors',0);
-						error_reporting(E_ALL);
-
-						$table = mysqli_connect("127.0.0.1","root","star2001!","flights");
-
-						if (mysqli_connect_errno()) // Check connection
+						$table = mysqli_connect("127.0.0.1","root","star2001!","flights");	//connect to the database
+						
+						if (mysqli_connect_errno()) //if there was an error connecting...
 						{
-							echo "Failed to connect to MySQL: " . mysqli_connect_error();
+							echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
 						}
-						else if($result = mysqli_query($table, $query))
+						else if($result = mysqli_query($table, $query))	//run the user entered query on the database
 						{
-							$fieldInfo = mysqli_fetch_fields($result);
-							echo "<div class='row'> <div class='small-12 small-centered columns'><table> <thead> <tr>";
-
-							foreach($fieldInfo as $column)
+							if(($rowcount = mysqli_num_rows($result)) > 1000)	//if there are more than 1000 rows returned
 							{
-								echo "<th>" . $column->name . "</th>";
+								echo "<div class='panel callout radius'>
+								        <h5> Query returned " . $rowcount . " rows. Displaying first 1000 results. </h5>
+								      </div>";	//inform the user that the page will not show all rows. Too slow to load.
+								$rowcount = 1000;	//set row count at max of 1000
+							}
+							else
+							{
+								echo "<div class='panel callout radius'>
+								        <h5> Query returned " . $rowcount . " rows. </h5>
+								      </div>";	//inform the user how many rows are returned
+							}
+							
+							echo "<table> <thead> <tr>";
+
+							foreach(mysqli_fetch_fields($result) as $column)	//for every field that is returned
+							{
+								echo "<th>" . $column->name . "</th>";	//make a table header
 							}
 
-							echo "</tr> </thead>";
+							echo "</tr> </thead> <tbody>";
 
-							while($row = mysqli_fetch_array($result))
+							$colCount = mysqli_field_count($table);	//get the number of columns in the returned table
+
+							for($j = 0; $j < $rowcount; $j++)	//make an html table row for each returned mysql table row
 							{
+								$row = mysqli_fetch_array($result);
 								echo "<tr>";
 
-								for($i = 0; $i < mysqli_field_count($table); $i++)
+								for($i = 0; $i < $colCount; $i++)	//make an html table data element for each mysql column 
 								{
-									echo "<td>" . $row[$i] . "</td>";
+									echo "<td>" . $row[$i] . "</td>";	//insert mysql table data into html table
 								}
 
 								echo "</tr>";
 							}
-							echo "</table> </div> </div>";
+							echo "</tbody> </table>";
 						}
-						else
+						else 	//if there was an error running the query...
 						{
-							//echo "boop";
-							//print_r(mysqli_error_list($table));
-							printf(mysqli_error($table));
+							echo "</div> </div>";
+
+							echo "<div class='row'> <div class='small-11 small-centered columns'>";
+
+							echo "<div data-alert class='alert-box alert radius'>"
+							  . mysqli_error($table) .
+							  "<a href='#' class='close'>&times;</a>
+							</div> </div> </div>";	//inform the user and show the generated error
 						}
-					}
-					//mysqli_free_result($result);
-					//mysqli_close($table);
+
+						mysqli_free_result($result);
+						mysqli_close($table);	//close the connection to the database
+					}//end if POSTed
 				?>
 			</div>
       	</div>
