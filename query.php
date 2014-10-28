@@ -99,7 +99,7 @@
 			<div class="small-9 small-centered columns">
 				<?php
 					ini_set('display_errors',0);
-					error_reporting(E_ALL);
+					//error_reporting(E_ALL);
 
 					if(isset($_POST["query"]))	//if there is stuff to receive from the form...
 					{
