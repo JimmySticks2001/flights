@@ -7,20 +7,69 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="css/foundation.css" />
+        
+        <script>
+            function showCity(country, cityElement, airportElement) {
+                if (country == "") {
+                    document.getElementById(cityElement).innerHTML = "";
+                    return;
+                } else { 
+                    if (window.XMLHttpRequest) {
+                        xmlhttp = new XMLHttpRequest();
+                    }
+                    xmlhttp.onreadystatechange = function() {
+                        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                            document.getElementById(cityElement).innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                    xmlhttp.open("GET","getCity.php?country="+country+"&cityElement="+cityElement+"&airportElement="+airportElement,true);
+                    xmlhttp.send();
+                }
+            }
+
+            function showAirport(city, airportElement) {
+                if (city == "") {
+                    document.getElementById(airportElement).innerHTML = "";
+                    return;
+                } else { 
+                    if (window.XMLHttpRequest) {
+                        xmlhttp = new XMLHttpRequest();
+                    }
+                    xmlhttp.onreadystatechange = function() {
+                        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                            document.getElementById(airportElement).innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                    xmlhttp.open("GET","getAirport.php?city="+city+"&airportElement="+airportElement,true);
+                    xmlhttp.send();
+                }
+            }
+        </script>
         <script src="js/vendor/modernizr.js"></script>
     </head>
     <body>
         
+        <?php
+            ini_set('display_errors',0);
+            $table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
+
+            if (mysqli_connect_errno()) //if there was an error connecting...
+            {
+                echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
+            }
+        ?>
+
+
         <h1>Flight Planner</h1>
 
         Application and user interface will go here. Run test queries <a href="query.php"> here </a>
 
         <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
             <?php 
-                if(isset($_POST["departure"]) && isset($_POST["arrival"]))  //if PHP received a http POST request
+                if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]))  //if PHP received a http POST request
                 {
-                    $departureCode = $_POST["departure"];   //get the received departure code
-                    $arrivalCode = $_POST["arrival"];   //get the received arrival code
+                    $departureCode = $_POST["originIATA"];   //get the received departure code
+                    $arrivalCode = $_POST["destIATA"];   //get the received arrival code
                 }
                 else
                 {
@@ -28,28 +77,60 @@
                     $arrivalCode = "";
                 }
             ?>
-            <!--<textarea name="query" rows="19" required><?php echo $query;//place the query into the textarea?></textarea>
-            -->
 
-            <label>Departure code
-                <input type="departure" name="departure">
-            </label>
-            <label>Arrival code
-                <input type="arrival" name="arrival">
-            </label>
+            <h4>Origin</h4>
+            <?php
+                $countryQuery = "SELECT DISTINCT Country FROM airports ORDER BY Country";
+                $result = mysqli_query($table, $countryQuery);
 
+                echo "<label>Country 
+                          <select name='originCountry' onchange='showCity(this.value, \"originCityDropdown\",\"originAirportDropdown\")''>";
+                              while($row = mysqli_fetch_array($result))
+                              {
+                                  echo "<option value='" . $row['Country'] . "'>" . $row['Country'] . "</option>";
+                              }
+                          echo "</select>
+                      </label>";
+            ?>
+
+            <div id="originCityDropdown"></div>
+            <div id="originAirportDropdown"></div>
+
+            
+            </br>
+            <h4>Destination</h4>
+            <?php
+                $result = mysqli_query($table, $countryQuery);
+
+                echo "<label>Country 
+                          <select name='destCountry' onchange='showCity(this.value, \"destCityDropdown\",\"destAirportDropdown\")''>";
+                              while($row = mysqli_fetch_array($result))
+                              {
+                                  echo "<option value='" . $row['Country'] . "'>" . $row['Country'] . "</option>";
+                              }
+                          echo "</select>
+                      </label>";
+            ?>
+
+            <div id="destCityDropdown"></div>
+            <div id="destAirportDropdown"></div>
+
+            <label>Departure date
+                <input type="date" name="date">
+            </label>
+            
             </br>
             <input type ="submit" class="button small radius">                      
         </form>
         
 
         <?php
-            ini_set('display_errors',0);
+            //ini_set('display_errors',0);
             //error_reporting(E_ALL);
 
-            if(isset($_POST["departure"]) && isset($_POST["arrival"]))  //if there is stuff to receive from the form...
+            if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]))  //if there is stuff to receive from the form...
             {
-                $table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
+                //$table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
 
                 $query = "SELECT * FROM flights WHERE departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "'";
 
@@ -118,19 +199,6 @@
                 mysqli_close($table);   //close the connection to the database
             }//end if POSTed
         ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         
         <script src="js/vendor/jquery.js"></script>

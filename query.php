@@ -29,6 +29,11 @@
 						</thead>
 						<tbody>
 							<tr>
+								<td>FlightID</td>
+								<td>int(11)</td>
+								<td>55</td>
+							</tr>
+							<tr>
 								<td>departure</td>
 								<td>varchar(255)</td>
 								<td>ACC</td>
@@ -98,7 +103,7 @@
 		<div class="row">
 			<div class="small-9 small-centered columns">
 				<?php
-					ini_set('display_errors',0);
+					//ini_set('display_errors',0);
 					//error_reporting(E_ALL);
 
 					if(isset($_POST["query"]))	//if there is stuff to receive from the form...
