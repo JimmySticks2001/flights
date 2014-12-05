@@ -66,16 +66,18 @@
 
         <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
             <?php 
-                if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]))  //if PHP received a http POST request
-                {
-                    $departureCode = $_POST["originIATA"];   //get the received departure code
-                    $arrivalCode = $_POST["destIATA"];   //get the received arrival code
-                }
-                else
-                {
-                    $departureCode = "";    //if nothing was recieved, query is a 0 char string
-                    $arrivalCode = "";
-                }
+                //if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if PHP received a http POST request
+                //{
+                //   $departureCode = $_POST["originIATA"];   //get the received departure code
+                //    $arrivalCode = $_POST["destIATA"];   //get the received arrival code
+                //    $date = $_POST["date"];   //get the received departure date
+                //}
+                //else
+                //{
+                //    $departureCode = "";    //if nothing was recieved, query is a 0 char string
+                //    $arrivalCode = "";
+                //    $date = "";
+                //}
             ?>
 
             <h4>Origin</h4>
@@ -128,12 +130,17 @@
             //ini_set('display_errors',0);
             //error_reporting(E_ALL);
 
-            if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]))  //if there is stuff to receive from the form...
+            if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if there is stuff to receive from the form...
             {
+                $departureCode = $_POST["originIATA"];   //get the received departure code
+                $arrivalCode = $_POST["destIATA"];   //get the received arrival code
+                $date = $_POST["date"];   //get the received departure date
+                $dayofweek = date('w', strtotime($date)) + 1;   //get the day of the week. Sunday = 1, monday = 2, etc.
+
                 //$table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
 
-                $query = "SELECT * FROM flights WHERE departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "'";
-
+                $query = "SELECT * FROM flights WHERE departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%' ORDER BY dep_time";
+                        //SELECT * FROM flights WHERE departure = 'JFK'                    AND arrival = 'CDG'                  AND day_op LIKE '%2%' ORDER BY dep_time
                 //echo $query;
                 
                 if (mysqli_connect_errno()) //if there was an error connecting...
