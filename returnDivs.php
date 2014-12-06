@@ -157,8 +157,8 @@
             //ini_set('display_errors',0);
             //error_reporting(E_ALL);
 
-            if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if there is stuff to receive from the form...
-            {
+            //if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if there is stuff to receive from the form...
+            //{
                 $departureCode = $_POST["originIATA"];   //get the received departure code
                 $arrivalCode = $_POST["destIATA"];   //get the received arrival code
                 $date = $_POST["date"];   //get the received departure date
@@ -171,7 +171,7 @@
                 STRAIGHT_JOIN Airports AS a ON f.departure = a.IATA_FAA
                 STRAIGHT_JOIN Airports AS a2 ON f.arrival = a2.IATA_FAA
                 STRAIGHT_JOIN Airlines AS al ON f.airline = al.IATA
-                WHERE f.departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%'
+                WHERE f.departure = 'JFK' AND f.arrival = 'CDG' AND f.day_op LIKE '%1%'
                 ORDER BY f.dep_time";
 
                 
@@ -274,7 +274,6 @@
             //}//end if POSTed
 
             */
-            }
         ?>
 
         

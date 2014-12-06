@@ -18,7 +18,7 @@
     	</div>
     	<div class="row">
     		<fieldset>
-	      		<div class="small-1 columns">
+    			<!--<div class="small-1 columns">
 	      			<table>
 						<thead>
 							<tr>
@@ -80,8 +80,8 @@
 							</tr>
 						</tbody>
 					</table>
-				</div>
-				<div class="medium-6 columns">
+				</div> -->
+				<div class="medium-12 medium-centered columns">
 					<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 						<?php 
 							if(isset($_POST["query"]))	//if PHP received a http POST request
@@ -93,7 +93,7 @@
 								$query = "";	//if nothing was recieved, query is a 0 char string
 							}
 						?>
-						<textarea name="query" rows="19" required><?php echo $query;//place the query into the textarea?></textarea>
+						<textarea name="query" rows="10" required><?php echo $query;//place the query into the textarea?></textarea>
 
 						<input type ="submit" class="button small radius">						
 					</form>
