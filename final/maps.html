@@ -1,0 +1,41 @@
+<script>
+var From=new google.maps.LatLng(51.508742,-0.120850);
+var To=new google.maps.LatLng(-34.508742,-60.120850);
+var marker;
+var marker2;
+
+function initialize()
+{
+var mapProp = {
+  center:From,
+  zoom:1,
+  mapTypeId:google.maps.MapTypeId.ROADMAP
+  };
+
+var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+
+marker=new google.maps.Marker({
+  position:From,
+  icon:'img/air.png'
+  });
+marker.setMap(map);
+
+marker2=new google.maps.Marker({
+  position:To,
+  icon:'img/star.png'
+  });
+marker2.setMap(map);
+
+var myTrip=[From,To];
+var flightPath=new google.maps.Polyline({
+  path:myTrip,
+  strokeColor:"#FCB000",
+  strokeOpacity:0.6,
+  strokeWeight:6
+  });
+
+flightPath.setMap(map);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>

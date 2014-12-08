@@ -103,7 +103,7 @@
                 //{
                 //    $departureCode = "";    //if nothing was recieved, query is a 0 char string
                 //    $arrivalCode = "";
-                //    $date = "";
+                //    $date = ""; 
                 //}
             ?>
 
