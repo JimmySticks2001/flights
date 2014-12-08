@@ -84,6 +84,18 @@
         {
             echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
         }
+
+
+
+
+
+
+
+
+
+
+
+        
     ?>
 
     <div class="container main-content">
@@ -225,9 +237,13 @@
 				            }
 			            echo "</div>";
 
-			            echo "<div class='col-md-5'>";
+			        if($rowcount > 0)
+			        {
+			        	echo "<div class='col-md-5'>";
 			            	echo "<iframe src='map.html' id='map' width='360' height='360'></iframe>";
 			            echo "</div>";
+			        }
+			            
 
 				echo "</div>"; //end row
 		            
