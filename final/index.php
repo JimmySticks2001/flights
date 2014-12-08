@@ -72,15 +72,6 @@
         .resultButton{
             float: right;
             margin: 10px 10px 0px 0px;
-
-            /*padding: 5px 0px 0px 15px;
-            width: 90px;
-            height: 40px;
-            border: 2px solid;
-            border-color: #008cba;
-            border-radius: 4px;
-            background-color: #008cba;
-            color: #ffffff; */
         }
     </style>
   </head>
@@ -93,23 +84,9 @@
         {
             echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
         }
-
-        if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if PHP received a http POST request
-        {
-        	$departureCode = $_POST["originIATA"];   //get the received departure code
-            $arrivalCode = $_POST["destIATA"];   //get the received arrival code
-            $date = $_POST["date"];   //get the received departure date
-        }
-        else
-        {
-            $departureCode = "";    //if nothing was recieved, query is a 0 char string
-            $arrivalCode = "";
-            $date = ""; 
-        }
     ?>
 
     <div class="container main-content">
-    	<div id='googleMap' style='width:300px;height:300px;'></div>
 		<div class="row col-md-12">
 			<div class="col-md-12">
 				<img class="head-image" src="img/head.png" alt="hd">
@@ -171,31 +148,52 @@
 		
 		<?php
 
-		    //if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if there is stuff to receive from the form...
-		    //{
+		    if(isset($_POST["originIATA"]) && isset($_POST["destIATA"]) && isset($_POST["date"]))  //if there is stuff to receive from the form...
+		    {
 		        $departureCode = $_POST["originIATA"];   //get the received departure code
 		        $arrivalCode = $_POST["destIATA"];   //get the received arrival code
+		        //$departureCode = "JFK";
+		        //$arrivalCode = "CDG";
 		        $date = $_POST["date"];   //get the received departure date
 		        $dayofweek = date('w', strtotime($date)) + 1;   //get the day of the week. Sunday = 1, monday = 2, etc.
 
 		        $query = "SELECT f.dep_time AS departure, a.Name AS origin, a2.Name AS destination, al.Name AS airline, f.airline AS airlineCode, f.flightnum AS flightNumber, f.duration AS duration
-		        FROM Flights AS f 
+		        FROM Flights AS f
 		        STRAIGHT_JOIN Airports AS a ON f.departure = a.IATA_FAA
 		        STRAIGHT_JOIN Airports AS a2 ON f.arrival = a2.IATA_FAA
 		        STRAIGHT_JOIN Airlines AS al ON f.airline = al.IATA
-		        WHERE f.departure = 'JFK' AND arrival = 'CDG' AND day_op LIKE '%1%'
+		        WHERE f.departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%'
 		        ORDER BY f.dep_time";
+
+		        session_start(); 
+			    $_SESSION['originIATA'] = $departureCode;
+			    $_SESSION['destIATA'] = $arrivalCode;
+			    header('Location: fuck.php'); // go to other
 
 		        //WHERE f.departure = 'JFK' AND arrival = 'CDG' AND day_op LIKE '%1%'
 		        //WHERE f.departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%'
 
-		        
 		        if (mysqli_connect_errno()) //if there was an error connecting...
 		        {
 		            echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
 		        }
 		        else if($result = mysqli_query($table, $query)) //run the user entered query on the database
 		        {
+		        	$coordsResult = mysqli_query($table, $coordsQuery);
+		        	$coords = array();	//initialize an empty array
+
+		        	$i = 0;
+		        	while($row = mysqli_fetch_array($coordsResult))   //return each row of the result as an associative array 
+				    {
+						$coords[$i] = $row[0];
+						$coords[$i+1] = $row[1];
+						$i += 2;
+					}
+
+					$js_array = json_encode($coords);	//change the php variable into one that javascript will see
+					echo $js_array;	//send it on its way
+
+
 	        		echo "<div class='row col-md-12'>";
 			            if(($rowcount = mysqli_num_rows($result)) > 1000)   //if there are more than 1000 rows returned
 			            {
@@ -227,9 +225,9 @@
 				            }
 			            echo "</div>";
 
-			            //echo "<div class='col-md-5'>";
-			            //	echo "<div id='googleMap' style='width:300px;height:300px;'></div>";
-			            //echo "</div>";
+			            echo "<div class='col-md-5'>";
+			            	echo "<iframe src='map.html' id='map' width='360' height='360'></iframe>";
+			            echo "</div>";
 
 				echo "</div>"; //end row
 		            
@@ -247,17 +245,15 @@
 
 		        mysqli_free_result($result);
 		        mysqli_close($table);   //close the connection to the database
-		    //}
+		    }
 		?>
    </div>
 
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/main.js"></script>
     <script src="js/bootstrap.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
-	<script src="http://maps.googleapis.com/maps/api/js"</script>
 	<script>
 	 $(function(){
 	  $('.datepicker').datepicker();

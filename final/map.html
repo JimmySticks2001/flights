@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+    </style>
+    
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script>
+		var map;
+		
+		function initialize() 
+		{
+			var mapOptions = 
+			{
+				zoom: 2,
+				center: new google.maps.LatLng(20, 5),
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				disableDefaultUI: true
+			};
+		
+			map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
+			
+			$.ajax
+			({
+    			type: "post",
+   				url: "fuck.php",
+    			data: $(this).serialize(),
+    			success: function(data)
+    			{
+        			console.log(data); //raw string
+        			var datas = JSON.parse(data);
+        			var image = 'marker.png';
+        			var wat = datas.toString();
+        			console.log(datas);
+        			
+					for(var i = 0; i < datas.length; i+=2)
+					{	
+						//console.log(datas[i]);
+						var marker = new google.maps.Marker({
+						position: new google.maps.LatLng(datas[i],datas[i+1]),
+						map: map,
+						icon: image,
+						title: ""
+						});
+					}
+
+					var flightPlanCoordinates = [
+					    new google.maps.LatLng(datas[0], datas[1]),
+					    new google.maps.LatLng(datas[2], datas[3])
+					  ];
+
+					var flightPath = new google.maps.Polyline({
+					    path: flightPlanCoordinates,
+					    geodesic: true,
+					    strokeColor: '#FF0000',
+					    strokeOpacity: 1.0,
+					    strokeWeight: 2
+					});
+
+					flightPath.setMap(map);
+    			}
+			});
+		}
+
+		google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
