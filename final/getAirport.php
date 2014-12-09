@@ -1,6 +1,16 @@
 <?php
+session_start();
 $city = $_GET['city'];
 $airportElement = $_GET['airportElement'];
+
+if (strpos($airportElement, 'origin') !== FALSE)
+{
+    $_SESSION['originCity'] = $city;
+}
+else
+{
+    $_SESSION['destCity'] = $city;
+}
 
 $table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
 if (!$table) {

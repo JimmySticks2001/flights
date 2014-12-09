@@ -1,5 +1,6 @@
 <?php
-	
+	session_start();
+
 	$table = mysqli_connect("127.0.0.1","root","star2001!","flights");  //connect to the database
 
     if (mysqli_connect_errno()) //if there was an error connecting...
@@ -7,7 +8,7 @@
         echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
     }
 
-	session_start(); 
+	
     $origin = $_SESSION['originIATA'];
     $destination = $_SESSION['destIATA'];
 
@@ -34,5 +35,4 @@
 		$js_array = json_encode($coords);	//change the php variable into one that javascript will see
 		echo $js_array;	//send it on its way
 	}
-
 ?>
