@@ -103,7 +103,7 @@
 					</div>
 				</div>
 				<div class="row col-md-12" id="airplane">
-					<form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+					<form id="userInfos" role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 						<div class="col-lg-5 form-padding"> <!-- Start first column -->
 							<h5><span class="label label-info ">From:</span></h5>
 							
@@ -207,17 +207,17 @@
 
 								echo "<div class='input-group form-padding'>";
 									echo "<select class='form-control' name='cities' onchange='showAirport(this.value,\"originAirportDropdown\")''>";
-									        while($row = mysqli_fetch_array($result))
-									        {
-									        	if($row['City'] == $originCity)
-					                          	{
-					                          	  echo "<option value='" . $row['City'] . "' selected='selected'>" . $row['City'] . "</option>";
-					                          	}
-					                          	else
-					                          	{
-					                          	  echo "<option value='" . $row['City'] . "'>" . $row['City'] . "</option>";
-					                          	}
-									        }
+								        while($row = mysqli_fetch_array($result))
+								        {
+								        	if($row['City'] == $originCity)
+				                          	{
+				                          	  echo "<option value='" . $row['City'] . "' selected='selected'>" . $row['City'] . "</option>";
+				                          	}
+				                          	else
+				                          	{
+				                          	  echo "<option value='" . $row['City'] . "'>" . $row['City'] . "</option>";
+				                          	}
+								        }
 									echo "</select>";
 								echo "</div>";
 							?>
@@ -280,17 +280,17 @@
 
 								echo "<div class='input-group form-padding'>";
 									echo "<select class='form-control' name='cities' onchange='showAirport(this.value,\"destAirportDropdown\")''>";
-									        while($row = mysqli_fetch_array($result))
-									        {
-									        	if($row['City'] == $destCity)
-					                          	{
-					                          	  echo "<option value='" . $row['City'] . "' selected='selected'>" . $row['City'] . "</option>";
-					                          	}
-					                          	else
-					                          	{
-					                          	  echo "<option value='" . $row['City'] . "'>" . $row['City'] . "</option>";
-					                          	}
-									        }
+								        while($row = mysqli_fetch_array($result))
+								        {
+								        	if($row['City'] == $destCity)
+				                          	{
+				                          	  echo "<option value='" . $row['City'] . "' selected='selected'>" . $row['City'] . "</option>";
+				                          	}
+				                          	else
+				                          	{
+				                          	  echo "<option value='" . $row['City'] . "'>" . $row['City'] . "</option>";
+				                          	}
+								        }
 									echo "</select>";
 								echo "</div>";
 							?>
@@ -330,6 +330,8 @@
 				</form>
 			</div>
 			<?php
+
+			
 
 	    	$departureCode = $_POST["originIATA"];   //get the received departure code
 	        $arrivalCode = $_POST["destIATA"];   //get the received arrival code
@@ -391,12 +393,12 @@
 				        if($queryCounter == 1)	//if direct flights
 				        {
 				        	echo "<div class='row col-md-12'>";
-					            if($rowcount > 1000)   //if there are more than 1000 rows returned
+					            if($rowcount > 500)   //if there are more than 500 rows returned
 					            {
 					                echo "<div class='alert alert-info'>
-					                        <h5> Search returned " . $rowcount . " direct flights. Displaying first 1000. </h5>
+					                        <h5> Search returned " . $rowcount . " direct flights. Displaying first 500. </h5>
 					                      </div>";  //inform the user that the page will not show all rows. Too slow to load.
-					                $rowcount = 1000;   //set row count at max of 1000
+					                $rowcount = 500;   //set row count at max of 500
 					            }
 					            elseif($rowcount == 0)
 					            {
@@ -414,15 +416,24 @@
 
 							echo "<div class='row'>";
 					        	echo "<div class='col-md-7'>";
+					        		$rowCounter = 0;
 						            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
 						            {
-					            		echo "<div class='result'>";
-					                    	echo "<button type='button' class='btn btn-primary resultButton'>Select</button>";
-					                    	echo "<img id='logo' src = 'AIRLINE_LOGOS/" . $row['airlineCode'] ."' alt= 'Airline logo'>";
-						                    echo "Departs at <strong>" . date('h:ia', strtotime($row['departure'])) . "</strong>, " . date('H\h i\m', mktime(0,$row['duration'])) . "<br/>";
-						                    echo $row['origin'] . " to " . $row['destination'] . "<br/>";
-						                    echo "<strong>" . $row['airline'] . "</strong> flight number " . $row['flightNumber'] . "<br/>";
-						                echo "</div>";
+						            	if($rowCounter >= $rowcount)
+						            	{
+						            		return;
+						            	}
+						            	else
+						            	{
+						            		echo "<div class='result'>";
+						                    	echo "<button type='button' class='btn btn-primary resultButton'>Select</button>";
+						                    	echo "<img id='logo' src = 'AIRLINE_LOGOS/" . $row['airlineCode'] ."' alt= 'Airline logo'>";
+							                    echo "Departs at <strong>" . date('h:ia', strtotime($row['departure'])) . "</strong>, " . date('H\h i\m', mktime(0,$row['duration'])) . "<br/>";
+							                    echo $row['origin'] . " to " . $row['destination'] . "<br/>";
+							                    echo "<strong>" . $row['airline'] . "</strong> flight number " . $row['flightNumber'] . "<br/>";
+							                echo "</div>";
+							                $rowCounter++;
+						            	}
 						            }
 					            echo "</div>";
 
@@ -436,31 +447,40 @@
 				        }
 				        else
 				        {
-				        	echo "<div class='row col-md-12'>";
-					            if($rowcount > 1000)   //if there are more than 1000 rows returned
-					            {
-					                echo "<div class='alert alert-info'>
-					                        <h5> Search returned " . $rowcount . " flights with connections. Displaying first 1000. </h5>
-					                      </div>";  //inform the user that the page will not show all rows. Too slow to load.
-					                $rowcount = 1000;   //set row count at max of 1000
-					            }
-					            elseif($rowcount == 0)
-					            {
-									echo "<div class='alert alert-error'>
-					                        <h5> Search returned 0 flights with connections. </h5>
-					                      </div>";  //inform the user how many rows are returned
-					            }
-					            else
-					            {
-					                echo "<div class='alert alert-info'>
-					                        <h5> Search returned " . $rowcount . " flights with connections. </h5>
-					                      </div>";  //inform the user how many rows are returned
-					            }
+				        	echo "<div class='row'>";
+					        	echo "<div class='col-md-12'>";
+						            if($rowcount > 500)   //if there are more than 500 rows returned
+						            {
+						                echo "<div class='alert alert-info'>";
+						                    echo "<h5> Search returned " . $rowcount . " flights with connections. Displaying first 500. </h5>";
+						                echo "</div>";  //inform the user that the page will not show all rows. Too slow to load.
+						                $rowcount = 500;   //set row count at max of 500
+						            }
+						            elseif($rowcount == 0)
+						            {
+										echo "<div class='alert alert-error'>";
+						                    echo "<h5> Search returned 0 flights with connections. </h5>";
+						                echo "</div>";
+						            }
+						            else
+						            {
+						                echo "<div class='alert alert-info'>";
+						                    echo "<h5> Search returned " . $rowcount . " flights with connections. </h5>";
+						                echo "</div>";
+						            }
+					            echo "</div>"; //end row
 					        echo "</div>"; //end row
 
 							echo "<div class='row col-md-9'>";
-						            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
-						            {
+								$rowCounter = 0;
+					            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
+					            {
+					            	if($rowCounter >= $rowcount)
+					            	{
+					            		return;
+					            	}
+					            	else
+					            	{
 					            		echo "<div class='result'>";
 					                    	echo "<button type='button' class='btn btn-primary resultConButton'>Select</button>";
 					                    	echo "<div id='logoDiv'>";
@@ -474,7 +494,9 @@
 						                    echo "Departs ".$row['conOrigin']." at <strong>".date('h:ia', strtotime($row['conDepartureTime']))."</strong>, ".date('H\h i\m', mktime(0,$row['conDuration']))."<br/>";
 						                    echo "<strong>".$row['conAirline']."</strong> flight number ".$row['conFlightNumber']."<br/>";
 						                echo "</div>";
-						            }
+						                $rowCounter++;
+					            	}
+					            }
 							echo "</div>"; //end row
 				        }
 
@@ -507,9 +529,10 @@
     <script src="js/bootstrap.min.js"></script>
 	<script src="js/bootstrap-datepicker.js"></script>
 	<script>
-	 $(function(){
-	  $('.datepicker').datepicker();
-	  });
+		$(function()
+		{
+			$('.datepicker').datepicker();
+		});
 	</script>
   </body>
 </html>
