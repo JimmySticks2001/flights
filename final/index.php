@@ -9,7 +9,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOLARE</title>
-    <!-- Bootstrap -->
 	<link href="css/datepicker.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/personal.css">
@@ -59,13 +58,26 @@
             border-radius: 5px;
             box-shadow: 0px 1px 0px #e7e7e7;
         }
-        .result img{
-            float: right;
-            padding: 25px 20px 0px 0px; /*top right bottom left */
-        }
         .resultButton{
             float: right;
-            margin: 10px 10px 0px 0px;
+            margin: 12px 10px 0px 0px;
+        }
+        .resultConButton{
+            float: right;
+            margin: 35px 10px 0px 0px;
+        }
+        #logo{
+        	float: right;
+            padding: 25px 20px 0px 0px; /*top right bottom left */
+        }
+        #conLogo{
+        	display: block;
+        	padding: 15px 0px 25px 0px; /*top right bottom left */
+        }
+        #logoDiv{
+        	float: right;
+        	width: 140px;
+        	margin-right: 10px;
         }
     </style>
   </head>
@@ -111,6 +123,10 @@
 							
 				            <div id="originCityDropdown"></div>
 			            	<div id="originAirportDropdown"></div>
+			            	
+			            	<div class="input-group form-padding">
+			            		<input type="checkbox" name="nonStop" value="yes"> <div id="nonStop">Non-stop only</div>
+			            	</div>
 
 						</div> <!--Close First Column -->
 						<div class="col-lg-5 form-padding">	<!-- Start Arrival column -->
@@ -143,7 +159,7 @@
 					   </div> <!--Close Arrival Column-->
 					</form>
 				</div>
-		<?php
+			<?php
 	    }
 	    else //if the fields have been filled in and the submit button pressed...
 	    {
@@ -152,7 +168,7 @@
 
 	    	$destCountry  = $_SESSION['destCountry'];
 	    	$destCity = $_SESSION['destCity'];
-	    ?>
+	    	?>
 	    	<div class="row col-md-12">
 				<div class="col-md-12">
 					<img class="head-image" src="img/head.png" alt="hd">
@@ -227,6 +243,10 @@
 								    echo "</select>";
 								echo "</div>";
 							?>
+		            	</div>
+
+		            	<div class="input-group form-padding">
+		            		<input type="checkbox" name="nonStop" value="yes" <?php if ($_POST['nonStop'] == 'yes') echo 'checked="checked"' ?> > <div id="nonStop">Non-stop only</div>
 		            	</div>
 
 					</div> <!--Close First Column -->
@@ -311,7 +331,6 @@
 			</div>
 			<?php
 
-
 	    	$departureCode = $_POST["originIATA"];   //get the received departure code
 	        $arrivalCode = $_POST["destIATA"];   //get the received arrival code
 	        //$departureCode = "JFK";
@@ -324,66 +343,153 @@
 	        STRAIGHT_JOIN Airports AS a ON f.departure = a.IATA_FAA
 	        STRAIGHT_JOIN Airports AS a2 ON f.arrival = a2.IATA_FAA
 	        STRAIGHT_JOIN Airlines AS al ON f.airline = al.IATA
-	        WHERE f.departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%'
+	        WHERE f.departure = '".$departureCode."' AND arrival = '".$arrivalCode."' AND day_op LIKE '%".$dayofweek."%'
 	        ORDER BY f.dep_time";
+
+	        if($_POST['nonStop'] != 'yes')
+	        {
+	        	$query .= "; SELECT * FROM 
+				(
+					SELECT f.dep_time AS departureTime, a.Name AS origin, a2.Name AS destination, al.Name AS airline, f.airline AS airlineCode, f.flightnum AS flightNumber, f.duration AS duration, f.arrival
+					FROM Flights AS f
+					STRAIGHT_JOIN Airports AS a ON f.departure = a.IATA_FAA
+					STRAIGHT_JOIN Airports AS a2 ON f.arrival = a2.IATA_FAA
+					STRAIGHT_JOIN Airlines AS al ON airline = al.IATA
+					WHERE departure = '".$departureCode."' AND day_op LIKE '%".$dayofweek."%'
+				) f1
+				JOIN
+				(
+					SELECT f.dep_time AS conDepartureTime, a.Name AS conOrigin, a2.Name AS conDestination, al.Name AS conAirline, f.airline AS conAirlineCode, f.flightnum AS conFlightNumber, f.duration AS conDuration, f.departure AS conDeparture
+					FROM Flights AS f
+					STRAIGHT_JOIN Airports AS a ON f.departure = a.IATA_FAA
+					STRAIGHT_JOIN Airports AS a2 ON f.arrival = a2.IATA_FAA
+					STRAIGHT_JOIN Airlines AS al ON airline = al.IATA
+					WHERE arrival = '".$arrivalCode."' AND day_op LIKE '%".$dayofweek."%'
+				) f2
+				ON f1.arrival = f2.conDeparture
+				WHERE STR_TO_DATE(f2.conDepartureTime, '%H:%i') >= date_add(STR_TO_DATE(f1.departureTime, '%H:%i'), INTERVAL (f1.duration + 60) minute) AND (f1.duration + f2.conDuration) < 800 
+				ORDER BY f1.departureTime";
+	        }
 	         
 		    $_SESSION['originIATA'] = $departureCode;
 		    $_SESSION['destIATA'] = $arrivalCode;
-
-	        //WHERE f.departure = 'JFK' AND arrival = 'CDG' AND day_op LIKE '%1%'
-	        //WHERE f.departure = '" . $departureCode . "' AND arrival = '" . $arrivalCode . "' AND day_op LIKE '%".$dayofweek."%'
 
 	        if (mysqli_connect_errno()) //if there was an error connecting...
 	        {
 	            echo "Failed to connect to MySQL: " . mysqli_connect_error(); //print the error
 	        }
-	        else if($result = mysqli_query($table, $query)) //run the user entered query on the database
-	        {
-        		echo "<div class='row col-md-12'>";
-		            if(($rowcount = mysqli_num_rows($result)) > 1000)   //if there are more than 1000 rows returned
-		            {
-		                echo "<div class='alert alert-info' role='alert'>
-		                        <h5> Search returned " . $rowcount . " flights. Displaying first 1000. </h5>
-		                      </div>";  //inform the user that the page will not show all rows. Too slow to load.
-		                $rowcount = 1000;   //set row count at max of 1000
-		            }
-		            else
-		            {
-		                echo "<div class='alert alert-info' role='alert'>
-		                        <h5> Search returned " . $rowcount . " flights. </h5>
-		                      </div>";  //inform the user how many rows are returned
-		            }
-		        echo "</div>";
+	        else if (mysqli_multi_query($table ,$query))
+			{
+				$queryCounter = 1;
+				do
+				{
+				    // Store first result set
+				    if($result = mysqli_store_result($table))
+				    {
+				    	$rowcount = mysqli_num_rows($result);
 
-		        echo "<div class='row'>";
-		        	echo "<div class='col-md-7'>";
-			            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
-			            {
-				            	echo "<div class='result'>";
-			                    	echo "<button type='button' class='btn btn-primary resultButton'>Select</button>";
-			                    	echo "<img src = 'AIRLINE_LOGOS/" . $row['airlineCode'] ."' alt= 'Airline logo'>";
-				                    echo "Departs at <strong>" . date('h:ia', strtotime($row['departure'])) . "</strong>, " . date('H\h i\m', mktime(0,$row['duration'])) . "<br/>";
-				                    echo $row['origin'] . " to " . $row['destination'] . "<br/>";
-				                    echo "<strong>" . $row['airline'] . "</strong> flight number " . $row['flightNumber'] . "<br/>";
-				                echo "</div>";
-			            }
-		            echo "</div>";
+				        if($queryCounter == 1)	//if direct flights
+				        {
+				        	echo "<div class='row col-md-12'>";
+					            if($rowcount > 1000)   //if there are more than 1000 rows returned
+					            {
+					                echo "<div class='alert alert-info'>
+					                        <h5> Search returned " . $rowcount . " direct flights. Displaying first 1000. </h5>
+					                      </div>";  //inform the user that the page will not show all rows. Too slow to load.
+					                $rowcount = 1000;   //set row count at max of 1000
+					            }
+					            elseif($rowcount == 0)
+					            {
+									echo "<div class='alert alert-error'>
+					                        <h5> Search returned 0 direct flights. </h5>
+					                      </div>";  //inform the user how many rows are returned
+					            }
+					            else
+					            {
+					                echo "<div class='alert alert-info'>
+					                        <h5> Search returned " . $rowcount . " direct flights. </h5>
+					                      </div>";  //inform the user how many rows are returned
+					            }
+					        echo "</div>"; //end row
 
-		        if($rowcount > 0)
-		        {
-		        	echo "<div class='col-md-5'>";
-		            	echo "<iframe src='map.html' id='map' width='360' height='360'></iframe>";
-		            echo "</div>";
-		        }
+							echo "<div class='row'>";
+					        	echo "<div class='col-md-7'>";
+						            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
+						            {
+					            		echo "<div class='result'>";
+					                    	echo "<button type='button' class='btn btn-primary resultButton'>Select</button>";
+					                    	echo "<img id='logo' src = 'AIRLINE_LOGOS/" . $row['airlineCode'] ."' alt= 'Airline logo'>";
+						                    echo "Departs at <strong>" . date('h:ia', strtotime($row['departure'])) . "</strong>, " . date('H\h i\m', mktime(0,$row['duration'])) . "<br/>";
+						                    echo $row['origin'] . " to " . $row['destination'] . "<br/>";
+						                    echo "<strong>" . $row['airline'] . "</strong> flight number " . $row['flightNumber'] . "<br/>";
+						                echo "</div>";
+						            }
+					            echo "</div>";
 
-			echo "</div>"; //end row
-	            
+						        if($rowcount > 0)
+						        {
+						        	echo "<div class='col-md-5'>";
+						            	echo "<iframe src='map.html' id='map' width='360' height='360'></iframe>";
+						            echo "</div>";
+						        }
+							echo "</div>"; //end row
+				        }
+				        else
+				        {
+				        	echo "<div class='row col-md-12'>";
+					            if($rowcount > 1000)   //if there are more than 1000 rows returned
+					            {
+					                echo "<div class='alert alert-info'>
+					                        <h5> Search returned " . $rowcount . " flights with connections. Displaying first 1000. </h5>
+					                      </div>";  //inform the user that the page will not show all rows. Too slow to load.
+					                $rowcount = 1000;   //set row count at max of 1000
+					            }
+					            elseif($rowcount == 0)
+					            {
+									echo "<div class='alert alert-error'>
+					                        <h5> Search returned 0 flights with connections. </h5>
+					                      </div>";  //inform the user how many rows are returned
+					            }
+					            else
+					            {
+					                echo "<div class='alert alert-info'>
+					                        <h5> Search returned " . $rowcount . " flights with connections. </h5>
+					                      </div>";  //inform the user how many rows are returned
+					            }
+					        echo "</div>"; //end row
+
+							echo "<div class='row col-md-9'>";
+						            while($row = mysqli_fetch_array($result))   //return each row of the result as an associative array 
+						            {
+					            		echo "<div class='result'>";
+					                    	echo "<button type='button' class='btn btn-primary resultConButton'>Select</button>";
+					                    	echo "<div id='logoDiv'>";
+						                    	echo "<img id='conLogo' src = 'AIRLINE_LOGOS/" . $row['airlineCode'] ."' alt= 'Airline logo'>";	// id='logo'
+						                    	echo "<img id='conLogo' src = 'AIRLINE_LOGOS/" . $row['conAirlineCode'] ."' alt= 'Airline logo'>"; // id='conLogo' 
+						                    echo "</div>";
+
+						                    echo "Departs ".$row['origin']." at <strong>".date('h:ia', strtotime($row['departureTime']))."</strong>, ".date('H\h i\m', mktime(0,$row['duration']))."<br/>";
+						                    echo "<strong>".$row['airline']."</strong> flight number ".$row['flightNumber']."<br/>";
+						                    echo "<br/>";
+						                    echo "Departs ".$row['conOrigin']." at <strong>".date('h:ia', strtotime($row['conDepartureTime']))."</strong>, ".date('H\h i\m', mktime(0,$row['conDuration']))."<br/>";
+						                    echo "<strong>".$row['conAirline']."</strong> flight number ".$row['conFlightNumber']."<br/>";
+						                echo "</div>";
+						            }
+							echo "</div>"; //end row
+				        }
+
+				      	mysqli_free_result($table);
+				    }
+
+				    $queryCounter++;
+			    }
+			  	while(mysqli_next_result($table));
 	        }//end query
 	        else    //if there was an error running the query...
 	        {
 	            echo "</div> </div>";
 	            echo "<div class='row'> <div class='small-11 small-centered columns'>";
-	            echo "<div data-alert class='alert-box alert radius'>"
+	            echo "<div class='alert alert-error' role='alert'>"
 	                    . mysqli_error($table) .
 	                    "<a href='#' class='close'>&times;</a>
 	                </div> </div> </div>";

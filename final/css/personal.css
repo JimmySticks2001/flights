@@ -155,7 +155,9 @@ footer {
 
 #airplane{
   background-image:url('../img/av.jpg');
-
   margin-left: 0;
-  
+}
+
+#nonStop{
+  color: #ffffff;
 }
